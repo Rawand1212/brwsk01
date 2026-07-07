@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — Rawand Artist</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="container" id="productMain">
+    <div class="loader"><div class="loader-spinner"></div><p>Loading product...</p></div>
+  </main>
+
+  <section class="section" id="relatedSection" style="display:none">
+    <div class="container">
+      <div class="section-header">
+        <h2>Related Products</h2>
+      </div>
+      <div class="product-grid" id="relatedGrid"></div>
+    </div>
+  </section>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/demo-data.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="assets/js/image-utils.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/firebase-service.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      Components.injectLayout("products");
+
+      const id = new URLSearchParams(window.location.search).get("id");
+      if (!id) {
+        document.getElementById("productMain").innerHTML = `<div class="empty-state"><span class="empty-icon">❌</span><p>Product not found</p><a href="products.html" class="btn btn-primary" style="margin-top:1rem">Browse Products</a></div>`;
+        return;
+      }
+
+      const product = await FirebaseService.getProduct(id);
+      if (!product) {
+        document.getElementById("productMain").innerHTML = `<div class="empty-state"><span class="empty-icon">❌</span><p>Product not found</p><a href="products.html" class="btn btn-primary" style="margin-top:1rem">Browse Products</a></div>`;
+        return;
+      }
+
+      document.title = `${product.name} — Rawand Artist`;
+
+      const images = product.images?.length ? product.images : ["assets/images/placeholder.svg"];
+      const stockClass = product.stock <= 0 ? "stock-out" : product.stock <= 3 ? "stock-low" : "stock-in";
+      const stockText = product.stock <= 0 ? "Out of Stock" : product.stock <= 3 ? `Only ${product.stock} left!` : "In Stock";
+
+      const badges = [];
+      if (product.featured) badges.push('<span class="badge badge-featured">Featured</span>');
+      if (product.isNew) badges.push('<span class="badge badge-new">New</span>');
+
+      document.getElementById("productMain").innerHTML = `
+        <div class="product-detail">
+          <div class="image-slider" id="imageSlider">
+            <div class="slider-main">
+              ${images.map((img, i) => `<div class="slider-slide ${i === 0 ? "active" : ""}"><img src="${img}" alt="${product.name}" ${i > 0 ? 'loading="lazy"' : ""}></div>`).join("")}
+              ${images.length > 1 ? '<button class="slider-nav slider-prev">‹</button><button class="slider-nav slider-next">›</button>' : ""}
+            </div>
+            ${images.length > 1 ? `<div class="slider-thumbs">${images.map((img, i) => `<div class="slider-thumb ${i === 0 ? "active" : ""}"><img src="${img}" alt=""></div>`).join("")}</div>` : ""}
+          </div>
+          <div class="product-info">
+            <div class="product-meta">${badges.join("")}<span class="badge" style="background:var(--bg-elevated);color:var(--text-muted)">${product.categoryName || ""}</span></div>
+            <h1>${product.name}</h1>
+            <p class="price">${UI.formatPrice(product.price)}</p>
+            <p class="stock ${stockClass}">${stockText}</p>
+            <p class="description">${product.description}</p>
+            <div class="product-actions">
+              ${product.stock > 0 ? Components.telegramButton(product) : '<button class="btn btn-secondary" disabled>Sold Out</button>'}
+              <div class="product-share">
+                <button class="btn btn-secondary" id="shareBtn">Share</button>
+                <button class="btn btn-secondary" id="copyLinkBtn">Copy Link</button>
+              </div>
+            </div>
+            <div class="qr-container">
+              <div id="qrCode"></div>
+              <p>Scan to view product</p>
+            </div>
+          </div>
+        </div>`;
+
+      ImageSlider.init(document.getElementById("imageSlider"));
+      const mainImg = document.querySelector(".slider-slide.active img");
+      if (mainImg) ImageSlider.initZoom(mainImg);
+
+      document.getElementById("shareBtn")?.addEventListener("click", () => UI.shareProduct(product));
+      document.getElementById("copyLinkBtn")?.addEventListener("click", () => UI.copyToClipboard(UI.getProductUrl(product.id)));
+      UI.renderQRCode(document.getElementById("qrCode"), UI.getProductUrl(product.id));
+
+      const related = await FirebaseService.getRelatedProducts(product);
+      if (related.length) {
+        document.getElementById("relatedSection").style.display = "block";
+        Products.renderGrid(related, document.getElementById("relatedGrid"));
+      }
+    });
+  </script>
+</body>
+</html>

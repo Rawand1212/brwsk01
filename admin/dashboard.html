@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Rawand Artist Admin</title>
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+        <a href="../index.html" class="btn btn-secondary btn-sm" target="_blank">View Store →</a>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="loader" style="grid-column:1/-1"><p>Loading stats...</p></div>
+      </div>
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Quick Actions</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Add a new product</td><td><a href="products.html" class="btn btn-primary btn-sm">Go to Products</a></td></tr>
+            <tr><td>Manage categories</td><td><a href="categories.html" class="btn btn-secondary btn-sm">Go to Categories</a></td></tr>
+            <tr><td>Store settings</td><td><a href="settings.html" class="btn btn-secondary btn-sm">Go to Settings</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/demo-data.js"></script>
+  <script src="../firebase/config.js"></script>
+  <script src="../assets/js/firebase-service.js"></script>
+  <script src="../assets/js/admin/auth.js"></script>
+  <script src="../assets/js/admin/admin-ui.js"></script>
+  <script>
+    initFirebase();
+    AdminAuth.init();
+    AdminUI.injectLayout("dashboard");
+
+    (async () => {
+      const stats = await FirebaseService.getStats();
+      document.getElementById("statsGrid").innerHTML = `
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-value">${stats.totalProducts}</div><div class="stat-label">Total Products</div></div>
+        <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-value">${stats.totalCategories}</div><div class="stat-label">Categories</div></div>
+        <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">${stats.featured}</div><div class="stat-label">Featured</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-value">${stats.lowStock}</div><div class="stat-label">Low Stock</div></div>`;
+    })();
+  </script>
+</body>
+</html>

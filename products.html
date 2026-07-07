@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — Rawand Artist</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="section">
+    <div class="container">
+      <div class="section-header">
+        <h1 id="pageTitle">All Products</h1>
+        <p id="pageSubtitle">Browse our full collection</p>
+      </div>
+      <div class="category-pills" id="categoryPills"></div>
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/demo-data.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="assets/js/image-utils.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/firebase-service.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      Components.injectLayout("products");
+
+      const params = new URLSearchParams(window.location.search);
+      const categoryId = params.get("category");
+      const filter = params.get("filter");
+
+      const categories = await FirebaseService.getCategories();
+      Products.renderCategoryPills(categories, document.getElementById("categoryPills"), categoryId);
+
+      if (filter === "featured") {
+        document.getElementById("pageTitle").textContent = "Featured Products";
+        document.getElementById("pageSubtitle").textContent = "Hand-picked premium items";
+      } else if (filter === "new") {
+        document.getElementById("pageTitle").textContent = "New Arrivals";
+        document.getElementById("pageSubtitle").textContent = "Fresh additions to the store";
+      } else if (categoryId) {
+        const cat = categories.find((c) => c.id === categoryId);
+        if (cat) {
+          document.getElementById("pageTitle").textContent = cat.name;
+          document.getElementById("pageSubtitle").textContent = `Browse all ${cat.name.toLowerCase()}`;
+        }
+      }
+
+      UI.showLoader(document.getElementById("productGrid"));
+
+      const filters = {};
+      if (categoryId) filters.categoryId = categoryId;
+      if (filter === "featured") filters.featured = true;
+      if (filter === "new") filters.isNew = true;
+
+      const products = await FirebaseService.getProducts(filters);
+      Products.renderGrid(products, document.getElementById("productGrid"));
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rawand Artist — Premium Gaming & Digital Art Store">
+  <title>Rawand Artist — Gaming Store</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-content">
+        <h1>Level Up Your Collection</h1>
+        <p>Premium game accounts, digital art, in-game items, and gift cards. Instant delivery via Telegram.</p>
+        <div class="hero-actions">
+          <a href="products.html" class="btn btn-primary">Browse Products</a>
+          <a href="products.html?filter=featured" class="btn btn-secondary">Featured Deals</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Categories</h2>
+          <p>Find exactly what you're looking for</p>
+        </div>
+        <div class="category-pills" id="categoryPills"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured Products</h2>
+          <p>Hand-picked premium items</p>
+        </div>
+        <div class="product-grid" id="featuredGrid"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>New Arrivals</h2>
+          <p>Fresh additions to the store</p>
+        </div>
+        <div class="product-grid" id="newArrivalsGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/demo-data.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="assets/js/image-utils.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/firebase-service.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      Components.injectLayout("home");
+
+      const categories = await FirebaseService.getCategories();
+      Products.renderCategoryPills(categories, document.getElementById("categoryPills"));
+
+      UI.showLoader(document.getElementById("featuredGrid"));
+      UI.showLoader(document.getElementById("newArrivalsGrid"));
+
+      const [featured, newArrivals] = await Promise.all([
+        FirebaseService.getProducts({ featured: true }),
+        FirebaseService.getProducts({ isNew: true })
+      ]);
+
+      Products.renderGrid(featured.slice(0, 4), document.getElementById("featuredGrid"));
+      Products.renderGrid(newArrivals.slice(0, 4), document.getElementById("newArrivalsGrid"));
+    });
+  </script>
+</body>
+</html>

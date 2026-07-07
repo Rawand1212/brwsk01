@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Rawand Artist Admin</title>
+  <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1>Settings</h1>
+      </div>
+
+      <div class="admin-table-wrapper" style="padding:1.5rem;margin-bottom:1.5rem">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem">Store Configuration</h2>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem">
+          Edit these values in <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">assets/js/config.js</code>
+        </p>
+        <table class="admin-table">
+          <tbody id="settingsTable"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-table-wrapper" style="padding:1.5rem;margin-bottom:1.5rem">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem">Firebase Setup Checklist</h2>
+        <ol style="color:var(--text-muted);font-size:0.9rem;padding-left:1.25rem;line-height:2">
+          <li>Create a project at <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+          <li>Enable <strong>Authentication</strong> → Email/Password sign-in</li>
+          <li>Create your admin account in Authentication → Users</li>
+          <li>Create a <strong>Firestore Database</strong> (start in test mode, then apply rules below)</li>
+          <li>Enable <strong>Storage</strong> for product images</li>
+          <li>Copy your web app config into <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">firebase/config.js</code></li>
+          <li>Set <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">demoMode: false</code> in <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">assets/js/config.js</code></li>
+          <li>Deploy to GitHub Pages (see README.md)</li>
+        </ol>
+      </div>
+
+      <div class="admin-table-wrapper" style="padding:1.5rem">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem">Firestore Security Rules</h2>
+        <pre style="background:var(--bg-input);padding:1rem;border-radius:var(--radius-sm);font-size:0.8rem;overflow-x:auto;color:var(--text-muted)">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /products/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}</pre>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../firebase/config.js"></script>
+  <script src="../assets/js/admin/auth.js"></script>
+  <script src="../assets/js/admin/admin-ui.js"></script>
+  <script>
+    initFirebase();
+    AdminAuth.init();
+    AdminUI.injectLayout("settings");
+
+    document.getElementById("settingsTable").innerHTML = `
+      <tr><td>Store Name</td><td>${STORE_CONFIG.name}</td></tr>
+      <tr><td>Tagline</td><td>${STORE_CONFIG.tagline}</td></tr>
+      <tr><td>Telegram</td><td><a href="${STORE_CONFIG.telegram}" target="_blank">${STORE_CONFIG.telegram}</a></td></tr>
+      <tr><td>Currency</td><td>${STORE_CONFIG.currency} (${STORE_CONFIG.currencySymbol})</td></tr>
+      <tr><td>Demo Mode</td><td>${STORE_CONFIG.demoMode ? "✅ Enabled (using sample data)" : "❌ Disabled (using Firebase)"}</td></tr>
+      <tr><td>Logged in as</td><td id="userEmail">—</td></tr>`;
+
+    const user = AdminAuth.getUser();
+    if (user) document.getElementById("userEmail").textContent = user.email;
+  </script>
+</body>
+</html>

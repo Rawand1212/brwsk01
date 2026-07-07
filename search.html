@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search — Rawand Artist</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main class="search-page">
+    <div class="container">
+      <div class="search-hero">
+        <h1 style="text-align:center;margin-bottom:1.5rem">Search Products</h1>
+        <div class="search-wrapper">
+          <input type="search" class="search-input" id="searchInput" placeholder="Search by name, category, or description..." autofocus>
+          <div class="search-suggestions" id="searchSuggestions"></div>
+        </div>
+      </div>
+      <div id="searchResults">
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/demo-data.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="assets/js/image-utils.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/firebase-service.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/components.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      Components.injectLayout("search");
+
+      const input = document.getElementById("searchInput");
+      const suggestions = document.getElementById("searchSuggestions");
+      const grid = document.getElementById("productGrid");
+
+      Search.init(input, suggestions);
+
+      const query = new URLSearchParams(window.location.search).get("q");
+      if (query) {
+        input.value = query;
+        UI.showLoader(grid);
+        const products = await FirebaseService.getProducts({ search: query });
+        Products.renderGrid(products, grid);
+      }
+    });
+  </script>
+</body>
+</html>
