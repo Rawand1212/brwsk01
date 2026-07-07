@@ -7,9 +7,9 @@ const AdminAuth = {
     auth.onAuthStateChanged((user) => {
       const isLoginPage = window.location.pathname.includes("login.html");
       if (user && isLoginPage) {
-        window.location.href = "dashboard.html";
+        window.location.replace("dashboard.html");
       } else if (!user && !isLoginPage) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
       }
     });
   },

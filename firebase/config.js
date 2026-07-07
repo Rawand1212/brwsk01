@@ -17,9 +17,9 @@ function initFirebase() {
   }
   if (!app) {
     app = firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
-    storage = firebase.storage();
+    if (firebase.auth) auth = firebase.auth();
+    if (firebase.firestore) db = firebase.firestore();
+    if (firebase.storage) storage = firebase.storage();
   }
-  return true;
+  return !!auth;
 }
