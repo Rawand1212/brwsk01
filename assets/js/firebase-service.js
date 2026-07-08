@@ -125,6 +125,38 @@ const FirebaseService = {
     await db.collection("categories").doc(id).delete();
   },
 
+  async seedSampleData() {
+    this._ensureDb();
+    this._ensureAuth();
+
+    const [catSnap, prodSnap] = await Promise.all([
+      db.collection("categories").limit(1).get(),
+      db.collection("products").limit(1).get()
+    ]);
+
+    if (!catSnap.empty || !prodSnap.empty) {
+      throw new Error("Database already has data. Import only works on an empty store.");
+    }
+
+    const idMap = {};
+    for (const cat of DEMO_CATEGORIES) {
+      const { id, ...data } = cat;
+      const doc = await db.collection("categories").add(data);
+      idMap[id] = doc.id;
+    }
+
+    for (const prod of DEMO_PRODUCTS) {
+      const { id, createdAt, ...data } = prod;
+      await db.collection("products").add({
+        ...data,
+        categoryId: idMap[data.categoryId],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    return { categories: DEMO_CATEGORIES.length, products: DEMO_PRODUCTS.length };
+  },
+
   async uploadImage(file, path) {
     if (!storage) throw new Error("Storage not connected. Enable Firebase Storage in Console.");
     const compressed = await ImageUtils.compress(file);

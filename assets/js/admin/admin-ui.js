@@ -57,8 +57,8 @@ const AdminUI = {
         </div>
         <div class="modal-body">${bodyHtml}</div>
         <div class="modal-footer">
-          <button class="btn btn-secondary modal-cancel">Cancel</button>
-          <button class="btn btn-primary modal-save">Save</button>
+          <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary modal-save">Save</button>
         </div>
       </div>`;
 

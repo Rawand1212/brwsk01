@@ -11,9 +11,15 @@
     <main class="admin-main">
       <div class="admin-header">
         <h1>Categories</h1>
-        <button class="btn btn-primary" id="addCategoryBtn">+ Add Category</button>
+        <button type="button" class="btn btn-primary" id="addCategoryBtn">+ Add Category</button>
       </div>
       <div id="categoryStatus" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;border-radius:var(--radius-sm);font-size:0.9rem"></div>
+      <div id="importBanner" style="display:none;margin-bottom:1rem;padding:1rem 1.25rem;border-radius:var(--radius-sm);background:rgba(124,58,237,0.1);border:1px solid var(--accent)">
+        <p style="margin-bottom:0.75rem;color:var(--text-muted);font-size:0.9rem">
+          Your database is empty. The categories you saw on the store were built-in samples — they are not saved in Firebase yet.
+        </p>
+        <button type="button" class="btn btn-primary" id="importSampleBtn">Import Sample Categories & Products</button>
+      </div>
       <div class="admin-table-wrapper">
         <table class="admin-table">
           <thead>
@@ -37,134 +43,140 @@
   <script src="../assets/js/admin/auth.js"></script>
   <script src="../assets/js/admin/admin-ui.js"></script>
   <script>
-    initFirebase();
-    AdminAuth.init();
-    AdminUI.injectLayout("categories");
+    (async function () {
+      initFirebase();
+      AdminAuth.init();
+      AdminUI.injectLayout("categories");
 
-    let categories = [];
+      let categories = [];
 
-    function slugify(text) {
-      return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    }
+      function slugify(text) {
+        return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      }
 
-    function escapeHtml(text) {
-      return String(text ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
+      function escapeHtml(text) {
+        return String(text ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
 
-    function showCategoryStatus(message, isError = false) {
-      const el = document.getElementById("categoryStatus");
-      el.style.display = "block";
-      el.style.background = isError ? "rgba(239,68,68,0.1)" : "rgba(124,58,237,0.1)";
-      el.style.border = `1px solid ${isError ? "var(--danger)" : "var(--accent)"}`;
-      el.style.color = isError ? "var(--danger)" : "var(--text-muted)";
-      el.textContent = message;
-    }
+      function showCategoryStatus(message, isError = false) {
+        const el = document.getElementById("categoryStatus");
+        el.style.display = "block";
+        el.style.background = isError ? "rgba(239,68,68,0.1)" : "rgba(124,58,237,0.1)";
+        el.style.border = `1px solid ${isError ? "var(--danger)" : "var(--accent)"}`;
+        el.style.color = isError ? "var(--danger)" : "var(--text-muted)";
+        el.textContent = message;
+      }
 
-    async function loadCategories() {
-      const tbody = document.getElementById("categoriesTable");
-      try {
-        if (STORE_CONFIG.demoMode) {
-          showCategoryStatus("Demo mode is on — viewing sample categories. Set demoMode: false in assets/js/config.js to save changes.");
-        } else if (!AdminAuth.getUser()) {
-          showCategoryStatus("Waiting for login...", true);
-        } else {
+      async function loadCategories() {
+        const tbody = document.getElementById("categoriesTable");
+        try {
           document.getElementById("categoryStatus").style.display = "none";
+          categories = await FirebaseService.getCategories();
+
+          if (!categories.length) {
+            document.getElementById("importBanner").style.display = "block";
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted)">No categories yet. Click "+ Add Category" or import the sample data above.</td></tr>`;
+            return;
+          }
+
+          document.getElementById("importBanner").style.display = "none";
+
+          tbody.innerHTML = categories.map((c) => `
+            <tr>
+              <td style="font-size:1.5rem">${c.icon || "📁"}</td>
+              <td>${escapeHtml(c.name)}</td>
+              <td>${escapeHtml(c.slug || slugify(c.name))}</td>
+              <td class="actions">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="editCategory('${c.id}')">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
+              </td>
+            </tr>`).join("");
+        } catch (err) {
+          showCategoryStatus(AdminUI.formatError(err), true);
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--danger)">${AdminUI.formatError(err)}</td></tr>`;
         }
+      }
 
-        categories = await FirebaseService.getCategories({ strict: true });
+      function categoryFormHtml(cat = {}) {
+        return `
+          <div class="form-group"><label>Name</label><input class="form-input" id="cName" value="${escapeHtml(cat.name)}" required></div>
+          <div class="form-group"><label>Icon (emoji)</label><input class="form-input" id="cIcon" value="${escapeHtml(cat.icon || "📁")}" maxlength="4"></div>
+          <div class="form-group"><label>Slug</label><input class="form-input" id="cSlug" value="${escapeHtml(cat.slug)}" placeholder="auto-generated from name"></div>`;
+      }
 
-        if (!categories.length) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted)">No categories yet. Click "+ Add Category" to create one.</td></tr>`;
+      function openCategoryModal(cat = null) {
+        const isEdit = !!cat;
+        AdminUI.openModal(isEdit ? "Edit Category" : "Add Category", categoryFormHtml(cat), async (overlay) => {
+          const name = overlay.querySelector("#cName").value.trim();
+          if (!name) throw new Error("Category name is required");
+
+          const data = {
+            name,
+            icon: overlay.querySelector("#cIcon").value.trim() || "📁",
+            slug: overlay.querySelector("#cSlug").value.trim() || slugify(name)
+          };
+
+          if (isEdit) {
+            await FirebaseService.updateCategory(cat.id, data);
+            AdminUI.showToast("Category updated!");
+          } else {
+            await FirebaseService.addCategory(data);
+            AdminUI.showToast("Category created!");
+          }
+          loadCategories();
+        });
+      }
+
+      window.editCategory = (id) => {
+        const cat = categories.find((c) => c.id === id);
+        if (!cat) {
+          AdminUI.showToast("Category not found. Refresh the page and try again.", true);
           return;
         }
+        openCategoryModal(cat);
+      };
 
-        tbody.innerHTML = categories.map((c) => `
-          <tr>
-            <td style="font-size:1.5rem">${c.icon || "📁"}</td>
-            <td>${c.name}</td>
-            <td>${c.slug || slugify(c.name)}</td>
-            <td class="actions">
-              <button class="btn btn-secondary btn-sm" onclick="editCategory('${c.id}')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
-            </td>
-          </tr>`).join("");
-      } catch (err) {
-        showCategoryStatus(AdminUI.formatError(err), true);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--danger)">${AdminUI.formatError(err)}</td></tr>`;
-      }
-    }
-
-    function categoryFormHtml(cat = {}) {
-      return `
-        <div class="form-group"><label>Name</label><input class="form-input" id="cName" value="${escapeHtml(cat.name)}" required></div>
-        <div class="form-group"><label>Icon (emoji)</label><input class="form-input" id="cIcon" value="${escapeHtml(cat.icon || "📁")}" maxlength="4"></div>
-        <div class="form-group"><label>Slug</label><input class="form-input" id="cSlug" value="${escapeHtml(cat.slug)}" placeholder="auto-generated from name"></div>`;
-    }
-
-    function openCategoryModal(cat = null) {
-      const isEdit = !!cat;
-      AdminUI.openModal(isEdit ? "Edit Category" : "Add Category", categoryFormHtml(cat), async (modal) => {
-        if (STORE_CONFIG.demoMode) {
-          AdminUI.showToast("Disable demo mode and configure Firebase to save", true);
-          throw new Error("Demo mode");
+      window.deleteCategory = async (id) => {
+        if (!confirm("Delete this category?")) return;
+        try {
+          await FirebaseService.deleteCategory(id);
+          AdminUI.showToast("Category deleted");
+          loadCategories();
+        } catch (err) {
+          AdminUI.showToast(AdminUI.formatError(err), true);
         }
+      };
 
-        const name = modal.querySelector("#cName").value.trim();
-        if (!name) {
-          throw new Error("Category name is required");
+      document.getElementById("addCategoryBtn").addEventListener("click", () => openCategoryModal());
+
+      document.getElementById("importSampleBtn").addEventListener("click", async () => {
+        const btn = document.getElementById("importSampleBtn");
+        btn.disabled = true;
+        btn.textContent = "Importing...";
+        try {
+          const result = await FirebaseService.seedSampleData();
+          AdminUI.showToast(`Imported ${result.categories} categories and ${result.products} products!`);
+          loadCategories();
+        } catch (err) {
+          AdminUI.showToast(AdminUI.formatError(err), true);
+          btn.disabled = false;
+          btn.textContent = "Import Sample Categories & Products";
         }
-
-        const data = {
-          name,
-          icon: modal.querySelector("#cIcon").value.trim() || "📁",
-          slug: modal.querySelector("#cSlug").value.trim() || slugify(name)
-        };
-
-        if (isEdit) {
-          await FirebaseService.updateCategory(cat.id, data);
-          AdminUI.showToast("Category updated!");
-        } else {
-          await FirebaseService.addCategory(data);
-          AdminUI.showToast("Category created!");
-        }
-        loadCategories();
       });
-    }
 
-    window.editCategory = (id) => {
-      const cat = categories.find((c) => c.id === id);
-      if (!cat) {
-        AdminUI.showToast("Category not found. Refresh the page and try again.", true);
+      const user = await AdminAuth.whenReady();
+      if (!user) {
+        document.getElementById("categoriesTable").innerHTML =
+          `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--danger)">Please log in to manage categories.</td></tr>`;
         return;
       }
-      openCategoryModal(cat);
-    };
 
-    window.deleteCategory = async (id) => {
-      if (!confirm("Delete this category?")) return;
-      if (STORE_CONFIG.demoMode) {
-        AdminUI.showToast("Disable demo mode to delete categories", true);
-        return;
-      }
-      try {
-        await FirebaseService.deleteCategory(id);
-        AdminUI.showToast("Category deleted");
-        loadCategories();
-      } catch (err) {
-        AdminUI.showToast(AdminUI.formatError(err), true);
-      }
-    };
-
-    document.getElementById("addCategoryBtn").addEventListener("click", () => openCategoryModal());
-    AdminAuth.whenReady().then((user) => {
-      if (user) loadCategories();
-      else document.getElementById("categoriesTable").innerHTML =
-        `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--danger)">Please log in to manage categories.</td></tr>`;
-    });
+      await loadCategories();
+    })();
   </script>
 </body>
 </html>

@@ -11,7 +11,7 @@
     <main class="admin-main">
       <div class="admin-header">
         <h1>Products</h1>
-        <button class="btn btn-primary" id="addProductBtn">+ Add Product</button>
+        <button type="button" class="btn btn-primary" id="addProductBtn">+ Add Product</button>
       </div>
       <div class="admin-table-wrapper">
         <table class="admin-table">
@@ -58,7 +58,7 @@
       try {
         [products, categories] = await Promise.all([
           FirebaseService.getProducts(),
-          FirebaseService.getCategories({ strict: true })
+          FirebaseService.getCategories()
         ]);
 
         if (!products.length) {

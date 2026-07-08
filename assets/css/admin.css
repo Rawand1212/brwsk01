@@ -67,6 +67,9 @@ a:hover { color: var(--accent-hover); }
   cursor: pointer; transition: all var(--transition);
 }
 .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+.admin-header .btn-primary,
+.modal-footer .btn-primary,
+.admin-table .btn-primary { width: auto; }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-secondary { background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border); }
 .btn-danger { background: var(--danger); color: #fff; }
