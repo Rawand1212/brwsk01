@@ -4,34 +4,29 @@ const AdminAuth = {
   init() {
     if (!initFirebase()) return false;
 
-    auth.authStateReady().then(() => {
-      this._ready = true;
-      this._handleAuthState(auth.currentUser);
-    });
-
     auth.onAuthStateChanged((user) => {
-      if (!this._ready) return;
-      this._handleAuthState(user);
+      this._ready = true;
+      const isLoginPage = window.location.pathname.includes("login.html");
+
+      if (user && isLoginPage) {
+        window.location.replace("dashboard.html");
+      } else if (!user && !isLoginPage) {
+        window.location.replace("login.html");
+      }
     });
 
     return true;
   },
 
-  _handleAuthState(user) {
-    const isLoginPage = window.location.pathname.includes("login.html");
-
-    if (user && isLoginPage) {
-      window.location.replace("dashboard.html");
-    } else if (!user && !isLoginPage) {
-      window.location.replace("login.html");
-    }
-  },
-
   whenReady() {
     if (!auth) return Promise.resolve(null);
-    return auth.authStateReady().then(() => {
-      this._ready = true;
-      return auth.currentUser;
+    if (this._ready) return Promise.resolve(auth.currentUser);
+    return new Promise((resolve) => {
+      const unsub = auth.onAuthStateChanged((user) => {
+        unsub();
+        this._ready = true;
+        resolve(user);
+      });
     });
   },
 

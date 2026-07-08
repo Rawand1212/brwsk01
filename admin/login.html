@@ -56,8 +56,14 @@
         return;
       }
 
-      if (!AdminAuth.init()) {
-        showError(startupEl, "Firebase could not start. Please refresh the page.");
+      try {
+        if (!AdminAuth.init()) {
+          showError(startupEl, "Firebase could not start. Please refresh the page.");
+          btn.disabled = true;
+          return;
+        }
+      } catch (err) {
+        showError(startupEl, err.message || "Firebase could not start. Please refresh the page.");
         btn.disabled = true;
         return;
       }
