@@ -26,10 +26,10 @@
       <div class="admin-table-wrapper" style="padding:1.5rem;margin-bottom:1.5rem">
         <h2 style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem">Firebase Setup Checklist</h2>
         <ol style="color:var(--text-muted);font-size:0.9rem;padding-left:1.25rem;line-height:2">
-          <li>Create a project at <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+          <li><strong>Create Firestore Database</strong> — <a href="https://console.firebase.google.com/project/rawand-artist/firestore" target="_blank">Open Firestore</a> → click <strong>Create database</strong> → pick a location → Enable</li>
+          <li>Apply the security rules below (Rules tab → Paste → <strong>Publish</strong>)</li>
           <li>Enable <strong>Authentication</strong> → Email/Password sign-in</li>
           <li>Create your admin account in Authentication → Users</li>
-          <li>Create a <strong>Firestore Database</strong> (start in test mode, then apply rules below)</li>
           <li>Enable <strong>Storage</strong> for product images</li>
           <li>Copy your web app config into <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">firebase/config.js</code></li>
           <li>Set <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">demoMode: false</code> in <code style="background:var(--bg-input);padding:0.15rem 0.4rem;border-radius:4px">assets/js/config.js</code></li>

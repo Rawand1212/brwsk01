@@ -39,7 +39,7 @@ const AdminUI = {
     const messages = {
       "permission-denied": "Permission denied. Update Firestore rules in Firebase Console (see Settings page).",
       "unauthenticated": "You are not logged in. Please log in again.",
-      "not-found": "Database not found. Create Firestore in Firebase Console.",
+      "not-found": "Firestore database not created. Open Firebase Console → Firestore Database → click Create database.",
       "failed-precondition": "Firestore index required. Try again or check Firebase Console.",
       "storage/unauthorized": "Storage permission denied. Update Storage rules in Firebase Console."
     };
