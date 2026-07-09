@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings — Rawand Artist Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css?v=3">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=4">
 </head>
 <body>
   <div class="admin-layout">
@@ -44,11 +44,7 @@
         <button type="button" class="btn btn-primary" id="testFirestoreBtn" style="width:auto">Test Firestore Write</button>
         <p id="testResult" style="margin-top:1rem;font-size:0.9rem"></p>
         <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-input);border-radius:var(--radius-sm);font-size:0.85rem;color:var(--text-muted);line-height:1.7">
-          <strong style="color:var(--text)">If test fails with "not-found":</strong><br>
-          1. <a href="https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=rawand-artist" target="_blank">Enable Cloud Firestore API</a><br>
-          2. <a href="https://console.cloud.google.com/apis/credentials?project=rawand-artist" target="_blank">Open API Credentials</a> → click your Browser API key → set API restrictions to <strong>Don't restrict</strong> (or include Cloud Firestore API) → add referrer <code>https://rawand1212.github.io/*</code><br>
-          3. Disable ad blocker for this site<br>
-          4. Hard refresh (Ctrl+Shift+R)
+          <strong style="color:var(--text)">Note:</strong> This admin now uses Firestore REST API directly (works even when the Firestore SDK is blocked by browser extensions).
         </div>
       </div>
 
@@ -74,12 +70,13 @@ service cloud.firestore {
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="../assets/js/config.js?v=3"></script>
-  <script src="../assets/js/demo-data.js?v=3"></script>
-  <script src="../firebase/config.js?v=3"></script>
-  <script src="../assets/js/firebase-service.js?v=3"></script>
-  <script src="../assets/js/admin/auth.js?v=3"></script>
-  <script src="../assets/js/admin/admin-ui.js?v=3"></script>
+  <script src="../assets/js/config.js?v=4"></script>
+  <script src="../assets/js/demo-data.js?v=4"></script>
+  <script src="../firebase/config.js?v=4"></script>
+  <script src="../assets/js/firestore-rest.js?v=4"></script>
+  <script src="../assets/js/firebase-service.js?v=4"></script>
+  <script src="../assets/js/admin/auth.js?v=4"></script>
+  <script src="../assets/js/admin/admin-ui.js?v=4"></script>
   <script>
     (async function () {
       initFirebase();
@@ -101,8 +98,7 @@ service cloud.firestore {
       document.getElementById("diagInfo").innerHTML = `
         Project: <strong>${diag.projectId}</strong><br>
         Firebase SDK: ${diag.firebaseLoaded ? "✅" : "❌ blocked"}<br>
-        Firestore SDK: ${diag.firestoreLoaded ? "✅" : "❌ blocked"}<br>
-        Database connected: ${diag.dbConnected ? "✅" : "❌"}<br>
+        Data mode: <strong>${diag.firestoreMode}</strong><br>
         Logged in: ${diag.loggedIn ? "✅ " + diag.email : "❌"}`;
 
       document.getElementById("testFirestoreBtn").addEventListener("click", async () => {
