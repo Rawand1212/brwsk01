@@ -60,7 +60,7 @@ const AdminUI = {
         <div class="modal-body">${bodyHtml}</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
-          <button type="button" class="btn btn-primary modal-save">Save</button>
+          <button type="button" class="btn btn-primary modal-save">Save to Store</button>
         </div>
       </div>`;
 
@@ -80,7 +80,7 @@ const AdminUI = {
       } catch (err) {
         AdminUI.showToast(AdminUI.formatError(err), true);
         btn.disabled = false;
-        btn.textContent = "Save";
+        btn.textContent = "Save to Store";
       }
     });
 
