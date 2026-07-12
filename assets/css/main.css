@@ -318,7 +318,8 @@ h3 { font-size: 1.25rem; }
 .footer-simple { grid-template-columns: 1fr; text-align: center; gap: 1rem; }
 .footer-simple .footer-links { display: flex; gap: 1.25rem; justify-content: center; }
 .footer-simple .footer-links a { display: inline; }
-.lang-toggle { min-width: 3.5rem; font-weight: 700; }
+.footer-contact { flex-wrap: wrap; }
+.footer-contact a { white-space: nowrap; }
 
 /* Kurdish / RTL */
 html[dir="rtl"] body { font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", "Arial", sans-serif; }

@@ -29,9 +29,11 @@ const Components = {
           <h3>${STORE_CONFIG.name}</h3>
           <p>${STORE_CONFIG.tagline}</p>
         </div>
-        <div class="footer-links">
-          <a href="products.html">${I18N.t("products")}</a>
+        <div class="footer-links footer-contact">
+          <a href="tel:${STORE_CONFIG.phone}">${I18N.t("phone")}: ${STORE_CONFIG.phone}</a>
           <a href="${STORE_CONFIG.telegram}" target="_blank" rel="noopener">${I18N.t("telegram")}</a>
+          <a href="${STORE_CONFIG.tiktok}" target="_blank" rel="noopener">${I18N.t("tiktok")}</a>
+          <a href="products.html">${I18N.t("products")}</a>
         </div>
         <div class="footer-bottom">
           <p>&copy; ${new Date().getFullYear()} ${STORE_CONFIG.name}. ${I18N.t("allRights")}</p>

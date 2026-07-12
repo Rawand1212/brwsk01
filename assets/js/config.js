@@ -1,7 +1,9 @@
 const STORE_CONFIG = {
-  name: "Rawand Artist",
+  name: "brwsk01",
   tagline: "یاری و هونەری دیجیتاڵ",
-  telegram: "https://t.me/YOUR_TELEGRAM_USERNAME",
+  phone: "07507161414",
+  telegram: "https://t.me/brwsk01",
+  tiktok: "https://www.tiktok.com/@brwsk.01",
   currency: "IQD",
   currencySymbol: "د.ع",
   itemsPerPage: 12,

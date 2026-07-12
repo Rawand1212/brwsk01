@@ -3,7 +3,7 @@ const AdminUI = {
     return `
     <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-brand">
-        <h2>🎮 Rawand Artist</h2>
+        <h2>🎮 brwsk01</h2>
         <span>Admin Panel</span>
       </div>
       <nav class="sidebar-nav">

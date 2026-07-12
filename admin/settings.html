@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings — Rawand Artist Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css?v=10">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=11">
 </head>
 <body>
   <div class="admin-layout">
@@ -70,12 +70,12 @@ service cloud.firestore {
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="../assets/js/config.js?v=10"></script>
-  <script src="../assets/js/demo-data.js?v=10"></script>
-  <script src="../firebase/config.js?v=10"></script>
-  <script src="../assets/js/firebase-service.js?v=10"></script>
-  <script src="../assets/js/admin/auth.js?v=10"></script>
-  <script src="../assets/js/admin/admin-ui.js?v=10"></script>
+  <script src="../assets/js/config.js?v=11"></script>
+  <script src="../assets/js/demo-data.js?v=11"></script>
+  <script src="../firebase/config.js?v=11"></script>
+  <script src="../assets/js/firebase-service.js?v=11"></script>
+  <script src="../assets/js/admin/auth.js?v=11"></script>
+  <script src="../assets/js/admin/admin-ui.js?v=11"></script>
   <script>
     (async function () {
       initFirebase();
@@ -85,7 +85,9 @@ service cloud.firestore {
       document.getElementById("settingsTable").innerHTML = `
         <tr><td>Store Name</td><td>${STORE_CONFIG.name}</td></tr>
         <tr><td>Tagline</td><td>${STORE_CONFIG.tagline}</td></tr>
+        <tr><td>Phone</td><td><a href="tel:${STORE_CONFIG.phone}">${STORE_CONFIG.phone}</a></td></tr>
         <tr><td>Telegram</td><td><a href="${STORE_CONFIG.telegram}" target="_blank">${STORE_CONFIG.telegram}</a></td></tr>
+        <tr><td>TikTok</td><td><a href="${STORE_CONFIG.tiktok}" target="_blank">${STORE_CONFIG.tiktok}</a></td></tr>
         <tr><td>Currency</td><td>${STORE_CONFIG.currency} (${STORE_CONFIG.currencySymbol})</td></tr>
         <tr><td>Demo Mode</td><td>${STORE_CONFIG.demoMode ? "✅ Enabled (using sample data)" : "❌ Disabled (using Firebase)"}</td></tr>
         <tr><td>Logged in as</td><td id="userEmail">—</td></tr>`;

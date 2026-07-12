@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product — Rawand Artist</title>
-  <link rel="stylesheet" href="assets/css/main.css?v=10">
+  <title>Product — brwsk01</title>
+  <link rel="stylesheet" href="assets/css/main.css?v=11">
 </head>
 <body>
   <div id="site-header"></div>
@@ -24,15 +24,15 @@
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/config.js?v=10"></script>
-  <script src="assets/js/i18n.js?v=10"></script>
-  <script src="assets/js/demo-data.js?v=10"></script>
-  <script src="firebase/config.js?v=10"></script>
-  <script src="assets/js/image-utils.js?v=10"></script>
-  <script src="assets/js/ui.js?v=10"></script>
-  <script src="assets/js/firebase-service.js?v=10"></script>
-  <script src="assets/js/products.js?v=10"></script>
-  <script src="assets/js/components.js?v=10"></script>
+  <script src="assets/js/config.js?v=11"></script>
+  <script src="assets/js/i18n.js?v=11"></script>
+  <script src="assets/js/demo-data.js?v=11"></script>
+  <script src="firebase/config.js?v=11"></script>
+  <script src="assets/js/image-utils.js?v=11"></script>
+  <script src="assets/js/ui.js?v=11"></script>
+  <script src="assets/js/firebase-service.js?v=11"></script>
+  <script src="assets/js/products.js?v=11"></script>
+  <script src="assets/js/components.js?v=11"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       I18N.apply();
@@ -52,7 +52,7 @@
         return;
       }
 
-      document.title = `${product.name} — Rawand Artist`;
+      document.title = `${product.name} — brwsk01`;
 
       const images = product.images?.length ? product.images : ["assets/images/placeholder.svg"];
       const stockClass = product.stock <= 0 ? "stock-out" : product.stock <= 3 ? "stock-low" : "stock-in";
