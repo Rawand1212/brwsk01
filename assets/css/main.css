@@ -93,6 +93,7 @@ h3 { font-size: 1.25rem; }
 .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 .btn-telegram { background: var(--telegram); color: #fff; width: 100%; padding: 1rem; font-size: 1rem; }
 .btn-telegram:hover { background: #1a8bc7; color: #fff; transform: translateY(-2px); }
+.btn-video { width: 100%; }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover { opacity: 0.9; color: #fff; }
 .btn-icon {
