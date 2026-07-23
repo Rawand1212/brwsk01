@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products — BRWSK01</title>
-  <link rel="stylesheet" href="assets/css/main.css?v=18">
+  <link rel="stylesheet" href="assets/css/main.css?v=19">
 </head>
 <body>
   <div id="site-header"></div>
@@ -16,21 +16,29 @@
         <p id="pageSubtitle"></p>
       </div>
       <div class="category-pills" id="categoryPills"></div>
+      <div class="sort-bar" id="sortBar">
+        <label for="sortSelect" id="sortLabel"></label>
+        <select id="sortSelect" class="sort-select">
+          <option value="newest"></option>
+          <option value="alpha"></option>
+          <option value="alpha-desc"></option>
+        </select>
+      </div>
       <div class="product-grid" id="productGrid"></div>
     </div>
   </main>
 
   <div id="site-footer"></div>
 
-  <script src="assets/js/config.js?v=18"></script>
-  <script src="assets/js/i18n.js?v=18"></script>
-  <script src="assets/js/demo-data.js?v=18"></script>
-  <script src="firebase/config.js?v=18"></script>
-  <script src="assets/js/image-utils.js?v=18"></script>
-  <script src="assets/js/ui.js?v=18"></script>
-  <script src="assets/js/firebase-service.js?v=18"></script>
-  <script src="assets/js/products.js?v=18"></script>
-  <script src="assets/js/components.js?v=18"></script>
+  <script src="assets/js/config.js?v=19"></script>
+  <script src="assets/js/i18n.js?v=19"></script>
+  <script src="assets/js/demo-data.js?v=19"></script>
+  <script src="firebase/config.js?v=19"></script>
+  <script src="assets/js/image-utils.js?v=19"></script>
+  <script src="assets/js/ui.js?v=19"></script>
+  <script src="assets/js/firebase-service.js?v=19"></script>
+  <script src="assets/js/products.js?v=19"></script>
+  <script src="assets/js/components.js?v=19"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       I18N.apply();
@@ -38,6 +46,17 @@
 
       const params = new URLSearchParams(window.location.search);
       const categoryId = params.get("category");
+      const sortSelect = document.getElementById("sortSelect");
+
+      document.getElementById("sortLabel").textContent = I18N.t("sortBy");
+      sortSelect.options[0].textContent = I18N.t("sortNewest");
+      sortSelect.options[1].textContent = I18N.t("sortAlpha");
+      sortSelect.options[2].textContent = I18N.t("sortAlphaDesc");
+
+      const savedSort = localStorage.getItem("brwsk-sort") || "newest";
+      if ([...sortSelect.options].some((o) => o.value === savedSort)) {
+        sortSelect.value = savedSort;
+      }
 
       const categories = await FirebaseService.getCategories();
 
@@ -52,9 +71,21 @@
       document.getElementById("pageTitle").textContent = cat ? cat.name : I18N.t("products");
       document.getElementById("pageSubtitle").textContent = I18N.t("allProductsSub");
 
-      UI.showLoader(document.getElementById("productGrid"));
-      const products = await FirebaseService.getProducts({ categoryId });
-      Products.renderGrid(products, document.getElementById("productGrid"));
+      async function load() {
+        UI.showLoader(document.getElementById("productGrid"));
+        const products = await FirebaseService.getProducts({
+          categoryId,
+          sort: sortSelect.value
+        });
+        Products.renderGrid(products, document.getElementById("productGrid"));
+      }
+
+      sortSelect.addEventListener("change", () => {
+        localStorage.setItem("brwsk-sort", sortSelect.value);
+        load();
+      });
+
+      await load();
     });
   </script>
 </body>

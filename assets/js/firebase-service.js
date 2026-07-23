@@ -242,7 +242,7 @@ const FirebaseService = {
             (p.categoryName && p.categoryName.toLowerCase().includes(q))
         );
       }
-      return products.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      return this.sortProducts(products, filters.sort);
     }
 
     let products = await FirestoreRest.listCollection("products");
@@ -259,8 +259,19 @@ const FirebaseService = {
       );
     }
 
-    products.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    return products;
+    return this.sortProducts(products, filters.sort);
+  },
+
+  sortProducts(products, sort = "newest") {
+    const list = [...products];
+    if (sort === "alpha") {
+      return list.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+    }
+    if (sort === "alpha-desc") {
+      return list.sort((a, b) => (b.name || "").localeCompare(a.name || "", undefined, { sensitivity: "base" }));
+    }
+    // newest first (default)
+    return list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   },
 
   async getProduct(id) {

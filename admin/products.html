@@ -4,14 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products — Rawand Artist Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css?v=18">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=19">
 </head>
 <body>
   <div class="admin-layout">
     <main class="admin-main">
       <div class="admin-header">
         <h1>Products</h1>
-        <button type="button" class="btn btn-primary" id="addProductBtn">+ Add Product</button>
+        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+          <label for="adminSort" style="font-size:0.85rem;color:var(--text-muted)">Sort</label>
+          <select id="adminSort" class="form-select" style="width:auto;min-width:140px">
+            <option value="newest">Newest</option>
+            <option value="alpha">A–Z</option>
+            <option value="alpha-desc">Z–A</option>
+          </select>
+          <button type="button" class="btn btn-primary" id="addProductBtn">+ Add Product</button>
+        </div>
       </div>
       <div id="productStatus" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;border-radius:var(--radius-sm);font-size:0.9rem"></div>
       <div class="admin-table-wrapper">
@@ -38,16 +46,17 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-  <script src="../assets/js/config.js?v=18"></script>
-  <script src="../assets/js/demo-data.js?v=18"></script>
-  <script src="../firebase/config.js?v=18"></script>
-  <script src="../assets/js/image-utils.js?v=18"></script>
-  <script src="../assets/js/firebase-service.js?v=18"></script>
-  <script src="../assets/js/admin/auth.js?v=18"></script>
-  <script src="../assets/js/admin/admin-ui.js?v=18"></script>
+  <script src="../assets/js/config.js?v=19"></script>
+  <script src="../assets/js/demo-data.js?v=19"></script>
+  <script src="../firebase/config.js?v=19"></script>
+  <script src="../assets/js/image-utils.js?v=19"></script>
+  <script src="../assets/js/firebase-service.js?v=19"></script>
+  <script src="../assets/js/admin/auth.js?v=19"></script>
+  <script src="../assets/js/admin/admin-ui.js?v=19"></script>
   <script>
     let categories = [];
     let products = [];
+    let currentSort = localStorage.getItem("brwsk-admin-sort") || "newest";
 
     function escapeHtml(text) {
       return String(text ?? "")
@@ -66,11 +75,35 @@
       el.textContent = message;
     }
 
+    function renderProductsTable() {
+      const tbody = document.getElementById("productsTable");
+      const sorted = FirebaseService.sortProducts(products, currentSort);
+
+      if (!sorted.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No products yet. ${categories.length ? 'Click "+ Add Product" to create one.' : 'Add a category first (Categories page), then add products.'}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = sorted.map((p) => `
+        <tr>
+          <td><img class="product-thumb" src="${escapeHtml(p.images?.[0] || "../assets/images/placeholder.svg")}" alt=""></td>
+          <td>${escapeHtml(p.name)}</td>
+          <td>${escapeHtml(p.categoryName || "—")}</td>
+          <td>${Number(p.price || 0).toLocaleString("en-US")} د.ع</td>
+          <td>${p.stock ?? 0}</td>
+          <td>${p.featured ? "⭐" : ""} ${p.isNew ? "🆕" : ""}</td>
+          <td class="actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="editProduct('${p.id}')">Edit</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button>
+          </td>
+        </tr>`).join("");
+    }
+
     async function loadProducts() {
       const tbody = document.getElementById("productsTable");
       try {
         const [productResult, categoryResult] = await Promise.allSettled([
-          FirebaseService.getProducts(),
+          FirebaseService.getProducts({ sort: currentSort }),
           FirebaseService.getCategories()
         ]);
 
@@ -90,24 +123,7 @@
           return;
         }
 
-        if (!products.length) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)">No products yet. ${categories.length ? 'Click "+ Add Product" to create one.' : 'Add a category first (Categories page), then add products.'}</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = products.map((p) => `
-          <tr>
-            <td><img class="product-thumb" src="${escapeHtml(p.images?.[0] || "../assets/images/placeholder.svg")}" alt=""></td>
-            <td>${escapeHtml(p.name)}</td>
-            <td>${escapeHtml(p.categoryName || "—")}</td>
-            <td>${Number(p.price || 0).toLocaleString("en-US")} د.ع</td>
-            <td>${p.stock ?? 0}</td>
-            <td>${p.featured ? "⭐" : ""} ${p.isNew ? "🆕" : ""}</td>
-            <td class="actions">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="editProduct('${p.id}')">Edit</button>
-              <button type="button" class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button>
-            </td>
-          </tr>`).join("");
+        renderProductsTable();
       } catch (err) {
         showStatus(AdminUI.formatError(err), true);
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--danger)">${AdminUI.formatError(err)}</td></tr>`;
@@ -223,8 +239,18 @@
 
         AdminUI.injectLayout("products");
         const addBtn = document.getElementById("addProductBtn");
+        const sortSelect = document.getElementById("adminSort");
         addBtn.disabled = true;
         addBtn.addEventListener("click", () => openProductModal());
+
+        if (sortSelect) {
+          sortSelect.value = currentSort;
+          sortSelect.addEventListener("change", () => {
+            currentSort = sortSelect.value;
+            localStorage.setItem("brwsk-admin-sort", currentSort);
+            renderProductsTable();
+          });
+        }
 
         const user = await AdminAuth.requireUser();
         if (!user) return;

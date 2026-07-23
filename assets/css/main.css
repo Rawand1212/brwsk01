@@ -224,6 +224,31 @@ h3 { font-size: 1.15rem; }
 }
 .category-pill:hover, .category-pill.active { border-color: var(--text); color: var(--text); }
 
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.sort-bar label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.sort-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.45rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.sort-select:focus { outline: none; border-color: var(--accent); }
+
 .category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
