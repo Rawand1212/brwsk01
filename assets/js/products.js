@@ -1,4 +1,9 @@
 const Products = {
+  isAvailable(product) {
+    if (typeof product?.available === "boolean") return product.available;
+    return (product?.stock ?? 0) > 0;
+  },
+
   downloadIcon() {
     return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
   },
@@ -8,7 +13,7 @@ const Products = {
     const badges = [];
     if (product.featured) badges.push(`<span class="badge badge-featured">${I18N.t("badgeFeatured")}</span>`);
     if (product.isNew) badges.push(`<span class="badge badge-new">${I18N.t("badgeNew")}</span>`);
-    if (product.stock <= 0) badges.push(`<span class="badge badge-sold">${I18N.t("soldOut")}</span>`);
+    if (!this.isAvailable(product)) badges.push(`<span class="badge badge-sold">${I18N.t("soldOut")}</span>`);
     const safeName = String(product.name || "product").replace(/"/g, "&quot;");
 
     return `

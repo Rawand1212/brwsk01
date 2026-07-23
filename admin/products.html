@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products — Rawand Artist Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=21">
 </head>
 <body>
   <div class="admin-layout">
@@ -30,7 +30,7 @@
               <th>Name</th>
               <th>Category</th>
               <th>Price</th>
-              <th>Stock</th>
+              <th>Status</th>
               <th>Flags</th>
               <th>Actions</th>
             </tr>
@@ -46,13 +46,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-  <script src="../assets/js/config.js?v=20"></script>
-  <script src="../assets/js/demo-data.js?v=20"></script>
-  <script src="../firebase/config.js?v=20"></script>
-  <script src="../assets/js/image-utils.js?v=20"></script>
-  <script src="../assets/js/firebase-service.js?v=20"></script>
-  <script src="../assets/js/admin/auth.js?v=20"></script>
-  <script src="../assets/js/admin/admin-ui.js?v=20"></script>
+  <script src="../assets/js/config.js?v=21"></script>
+  <script src="../assets/js/demo-data.js?v=21"></script>
+  <script src="../firebase/config.js?v=21"></script>
+  <script src="../assets/js/image-utils.js?v=21"></script>
+  <script src="../assets/js/firebase-service.js?v=21"></script>
+  <script src="../assets/js/admin/auth.js?v=21"></script>
+  <script src="../assets/js/admin/admin-ui.js?v=21"></script>
   <script>
     let categories = [];
     let products = [];
@@ -75,6 +75,11 @@
       el.textContent = message;
     }
 
+    function isProductAvailable(p) {
+      if (typeof p.available === "boolean") return p.available;
+      return (p.stock ?? 0) > 0;
+    }
+
     function renderProductsTable() {
       const tbody = document.getElementById("productsTable");
       const sorted = FirebaseService.sortProducts(products, currentSort);
@@ -90,7 +95,7 @@
           <td>${escapeHtml(p.name)}</td>
           <td>${escapeHtml(p.categoryName || "—")}</td>
           <td>${Number(p.price || 0).toLocaleString("en-US")} د.ع</td>
-          <td>${p.stock ?? 0}</td>
+          <td>${isProductAvailable(p) ? '<span style="color:var(--success)">Available</span>' : '<span style="color:var(--danger)">Sold Out</span>'}</td>
           <td>${p.featured ? "⭐" : ""} ${p.isNew ? "🆕" : ""}</td>
           <td class="actions">
             <button type="button" class="btn btn-secondary btn-sm" onclick="editProduct('${p.id}')">Edit</button>
@@ -132,6 +137,8 @@
 
     function productFormHtml(product) {
       const p = product || {};
+      const isEdit = !!(p && p.id);
+      const available = isEdit ? isProductAvailable(p) : true;
       const catOptions = categories.map((c) =>
         `<option value="${c.id}" data-name="${escapeHtml(c.name)}" ${p.categoryId === c.id ? "selected" : ""}>${escapeHtml(c.name)}</option>`
       ).join("");
@@ -141,12 +148,13 @@
         <div class="form-group"><label>Description</label><textarea class="form-textarea" id="pDesc">${escapeHtml(p.description)}</textarea></div>
         <div class="form-group"><label>Price (IQD) — optional, hidden on store</label><input type="number" step="1" min="0" class="form-input" id="pPrice" value="${p.price ?? ""}"></div>
         <div class="form-group"><label>Category *</label><select class="form-select" id="pCategory" required><option value="">Select category</option>${catOptions}</select></div>
-        <div class="form-group"><label>Stock</label><input type="number" class="form-input" id="pStock" value="${p.stock ?? 0}" min="0"></div>
         <div class="form-group"><label>Video link (optional)</label><input type="url" class="form-input" id="pVideo" value="${escapeHtml(p.videoLink || "")}" placeholder="https://youtube.com/... or https://tiktok.com/..."></div>
         <div class="toggle-group">
+          <label class="toggle-label"><input type="checkbox" id="pAvailable" ${available ? "checked" : ""}> Available</label>
           <label class="toggle-label"><input type="checkbox" id="pFeatured" ${p.featured ? "checked" : ""}> Featured</label>
           <label class="toggle-label"><input type="checkbox" id="pNew" ${p.isNew ? "checked" : ""}> New Arrival</label>
         </div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem">Uncheck <strong>Available</strong> when the product is sold out.</p>
         <div class="form-group" style="margin-top:1rem"><label>Images (optional)</label><div id="imageUploadArea"></div></div>`;
     }
 
@@ -156,6 +164,7 @@
       const priceRaw = overlay.querySelector("#pPrice").value;
       const price = priceRaw === "" ? 0 : parseFloat(priceRaw);
       let videoLink = overlay.querySelector("#pVideo").value.trim();
+      const available = overlay.querySelector("#pAvailable").checked;
 
       if (!name) throw new Error("Product name is required");
       if (!catSelect.value) throw new Error("Please select a category");
@@ -170,7 +179,8 @@
         price,
         categoryId: catSelect.value,
         categoryName: catSelect.selectedOptions[0]?.dataset.name || "",
-        stock: parseInt(overlay.querySelector("#pStock").value, 10) || 0,
+        available,
+        stock: available ? 1 : 0,
         videoLink,
         featured: overlay.querySelector("#pFeatured").checked,
         isNew: overlay.querySelector("#pNew").checked

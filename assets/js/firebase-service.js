@@ -286,8 +286,11 @@ const FirebaseService = {
 
   async addProduct(data) {
     this._ensureAuth();
+    const available = data.available !== false;
     return FirestoreRest.addDocument("products", {
       ...data,
+      available,
+      stock: available ? (data.stock > 0 ? data.stock : 1) : 0,
       images: data.images || [],
       createdAt: Date.now()
     });
