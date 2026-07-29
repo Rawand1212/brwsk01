@@ -26,6 +26,7 @@ const Products = {
           <div class="product-card-body">
             <span class="product-category">${product.categoryName || ""}</span>
             <h3 class="product-name">${product.name}</h3>
+            <p class="product-price">${UI.formatPrice(product.price)}</p>
           </div>
         </a>
         <button type="button" class="btn-download" data-download-name="${safeName}.jpg" title="${I18N.t("download")}" aria-label="${I18N.t("download")}">

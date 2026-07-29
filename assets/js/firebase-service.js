@@ -93,10 +93,25 @@ const FirestoreRest = {
   },
 
   async listCollection(collection) {
-    const url = `${this._base()}/${collection}?key=${firebaseConfig.apiKey}`;
-    const res = await fetch(url);
-    const json = await this._parseResponse(res, "Failed to load data");
-    return (json.documents || []).map((doc) => this._fromDoc(doc));
+    const all = [];
+    let pageToken = "";
+
+    do {
+      const params = new URLSearchParams({
+        key: firebaseConfig.apiKey,
+        pageSize: "100"
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const url = `${this._base()}/${collection}?${params.toString()}`;
+      const res = await fetch(url);
+      const json = await this._parseResponse(res, "Failed to load data");
+      const docs = (json.documents || []).map((doc) => this._fromDoc(doc));
+      all.push(...docs);
+      pageToken = json.nextPageToken || "";
+    } while (pageToken);
+
+    return all;
   },
 
   async getDocument(collection, id) {

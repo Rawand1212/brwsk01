@@ -33,7 +33,7 @@ const ImageUtils = {
   },
 
   /** Compress and return a data URL so images work without Firebase Storage. */
-  async toDataUrl(file, maxWidth = 1268, quality = 0.75) {
+  async toDataUrl(file, maxWidth = 900, quality = 0.6) {
     const compressed = await this.compress(file, maxWidth, quality);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
