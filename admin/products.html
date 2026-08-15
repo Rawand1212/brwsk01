@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Products — Rawand Artist Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css?v=23">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=24">
 </head>
 <body>
   <div class="admin-layout">
@@ -46,13 +46,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-  <script src="../assets/js/config.js?v=23"></script>
-  <script src="../assets/js/demo-data.js?v=23"></script>
-  <script src="../firebase/config.js?v=23"></script>
-  <script src="../assets/js/image-utils.js?v=23"></script>
-  <script src="../assets/js/firebase-service.js?v=23"></script>
-  <script src="../assets/js/admin/auth.js?v=23"></script>
-  <script src="../assets/js/admin/admin-ui.js?v=23"></script>
+  <script src="../assets/js/config.js?v=24"></script>
+  <script src="../assets/js/demo-data.js?v=24"></script>
+  <script src="../firebase/config.js?v=24"></script>
+  <script src="../assets/js/image-utils.js?v=24"></script>
+  <script src="../assets/js/firebase-service.js?v=24"></script>
+  <script src="../assets/js/admin/auth.js?v=24"></script>
+  <script src="../assets/js/admin/admin-ui.js?v=24"></script>
   <script>
     let categories = [];
     let products = [];
@@ -139,14 +139,23 @@
       const p = product || {};
       const isEdit = !!(p && p.id);
       const available = isEdit ? isProductAvailable(p) : true;
+      const defaultPrice = 2000;
+      const defaultCategory = categories.find((c) =>
+        String(c.name || "").toLowerCase().replace(/\s+/g, " ").trim() === "games ps4"
+        || String(c.slug || "").toLowerCase() === "games-ps4"
+        || String(c.name || "").toLowerCase().includes("ps4")
+      );
+      const selectedCategoryId = isEdit ? p.categoryId : (defaultCategory?.id || "");
+      const priceValue = isEdit ? (p.price ?? "") : defaultPrice;
+
       const catOptions = categories.map((c) =>
-        `<option value="${c.id}" data-name="${escapeHtml(c.name)}" ${p.categoryId === c.id ? "selected" : ""}>${escapeHtml(c.name)}</option>`
+        `<option value="${c.id}" data-name="${escapeHtml(c.name)}" ${selectedCategoryId === c.id ? "selected" : ""}>${escapeHtml(c.name)}</option>`
       ).join("");
 
       return `
         <div class="form-group"><label>Name *</label><input class="form-input" id="pName" value="${escapeHtml(p.name)}" required></div>
         <div class="form-group"><label>Description</label><textarea class="form-textarea" id="pDesc">${escapeHtml(p.description)}</textarea></div>
-        <div class="form-group"><label>Price (IQD) — optional, hidden on store</label><input type="number" step="1" min="0" class="form-input" id="pPrice" value="${p.price ?? ""}"></div>
+        <div class="form-group"><label>Price (IQD)</label><input type="number" step="1" min="0" class="form-input" id="pPrice" value="${priceValue}"></div>
         <div class="form-group"><label>Category *</label><select class="form-select" id="pCategory" required><option value="">Select category</option>${catOptions}</select></div>
         <div class="form-group"><label>Video link (optional)</label><input type="url" class="form-input" id="pVideo" value="${escapeHtml(p.videoLink || "")}" placeholder="https://youtube.com/... or https://tiktok.com/..."></div>
         <div class="toggle-group">
